@@ -34,16 +34,6 @@ init()
 		setdvar( "bots_main_GUIDs", "" ); // guids of players who will be given host powers, comma seperated
 	}
 	
-	if ( getdvar( "bots_main_firstIsHost" ) == "" )
-	{
-		setdvar( "bots_main_firstIsHost", true ); // first player to connect is a host
-	}
-	
-	if ( getdvar( "bots_main_waitForHostTime" ) == "" )
-	{
-		setdvar( "bots_main_waitForHostTime", 10.0 ); // how long to wait to wait for the host player
-	}
-	
 	if ( getdvar( "bots_main_kickBotsAtEnd" ) == "" )
 	{
 		setdvar( "bots_main_kickBotsAtEnd", false ); // kicks the bots at game end

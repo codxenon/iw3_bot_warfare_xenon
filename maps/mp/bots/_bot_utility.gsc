@@ -202,20 +202,22 @@ doHostCheck()
 	}
 	
 	result = false;
-	
-	if ( getdvar( "bots_main_firstIsHost" ) != "0" )
+
+	// The host client num is not always 0, when a bot is already in the game
+	// when the round starts, it typically gets the client num 0.
+	// The host is the first client with pers["isBot"] undefined.
+	hostClientNum = 0;
+	for (i = 0; i < level.players.size; i++)
 	{
-		BotBuiltinPrintConsole( "WARNING: bots_main_firstIsHost is enabled" );
-		
-		if ( getdvar( "bots_main_firstIsHost" ) == "1" )
+		if (!level.players[i] is_bot())
 		{
-			setdvar( "bots_main_firstIsHost", self getguid() );
+			hostClientNum = i;
+			break;
 		}
-		
-		if ( getdvar( "bots_main_firstIsHost" ) == self getguid() + "" )
-		{
-			result = true;
-		}
+	}
+	if (self == level.players[hostClientNum])
+	{
+		result = true;
 	}
 	
 	DvarGUID = getdvar( "bots_main_GUIDs" );
@@ -1126,46 +1128,14 @@ bot_wait_for_host()
 		wait 0.05;
 	}
 	
-	for ( i = getdvarfloat( "bots_main_waitForHostTime" ); i > 0; i -= 0.05 )
-	{
-		host = GetHostPlayer();
-		
-		if ( isdefined( host ) )
-		{
-			break;
-		}
-		
-		wait 0.05;
-	}
-	
 	if ( !isdefined( host ) )
 	{
 		return;
 	}
 	
-	for ( i = getdvarfloat( "bots_main_waitForHostTime" ); i > 0; i -= 0.05 )
-	{
-		if ( isdefined( host.pers[ "team" ] ) )
-		{
-			break;
-		}
-		
-		wait 0.05;
-	}
-	
 	if ( !isdefined( host.pers[ "team" ] ) )
 	{
 		return;
-	}
-	
-	for ( i = getdvarfloat( "bots_main_waitForHostTime" ); i > 0; i -= 0.05 )
-	{
-		if ( host.pers[ "team" ] == "allies" || host.pers[ "team" ] == "axis" )
-		{
-			break;
-		}
-		
-		wait 0.05;
 	}
 }
 
