@@ -66,6 +66,7 @@ init_menu()
 	
 	self thread watchPlayerOpenMenu();
 	self thread MenuSelect();
+	self thread MenuBack();
 	self thread RightMenu();
 	self thread LeftMenu();
 	
@@ -176,7 +177,7 @@ doGreetings()
 	wait 1;
 	self iprintln( "Welcome to Bot Warfare " + self.name + "!" );
 	wait 5;
-	self iprintln( "Press [{+frag}] + [{+smoke}] to open menu!" );
+	self iprintln( "Press [{+usereload}] + [{+melee}] to open menu!" );
 }
 
 watchPlayerOpenMenu()
@@ -186,7 +187,7 @@ watchPlayerOpenMenu()
 	
 	for ( ;; )
 	{
-		while ( !self fragbuttonpressed() || !self secondaryoffhandbuttonpressed() )
+		while ( !self usebuttonpressed() || !self meleebuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -196,30 +197,7 @@ watchPlayerOpenMenu()
 			self playlocalsound( "mouse_click" );
 			self thread OpenSub( self.submenu );
 		}
-		else
-		{
-			self playlocalsound( "mouse_click" );
-			
-			if ( self.submenu != "Main" )
-			{
-				self ExitSub();
-			}
-			else
-			{
-				self ExitMenu();
-				
-				if ( level.inprematchperiod || level.gameended )
-				{
-					self freezecontrols( true );
-				}
-				else
-				{
-					self freezecontrols( false );
-				}
-			}
-		}
-		
-		while ( self fragbuttonpressed() && self secondaryoffhandbuttonpressed() )
+		while ( self usebuttonpressed() && self meleebuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -230,14 +208,14 @@ MenuSelect()
 {
 	self endon ( "disconnect" );
 	self endon ( "bots_kill_menu" );
-	
+
 	for ( ;; )
 	{
-		while ( !self meleebuttonpressed() )
+		while ( !self jumpbuttonpressed() )
 		{
 			wait 0.05;
 		}
-		
+
 		if ( self.menuopen )
 		{
 			self playlocalsound( "mouse_click" );
@@ -249,6 +227,39 @@ MenuSelect()
 			else
 			{
 				self thread [[ self.option[ "Function" ][ self.submenu ][ self.curs[ self.submenu ][ "Y" ] ] ]]( self.option[ "Arg1" ][ self.submenu ][ self.curs[ self.submenu ][ "Y" ] ], self.option[ "Arg2" ][ self.submenu ][ self.curs[ self.submenu ][ "Y" ] ] );
+			}
+		}
+		
+		while ( self jumpbuttonpressed() )
+		{
+			wait 0.05;
+		}
+	}
+}
+
+MenuBack()
+{
+	self endon ( "disconnect" );
+	self endon ( "bots_kill_menu" );
+	
+	for ( ;; )
+	{
+		while ( !self meleebuttonpressed() )
+		{
+			wait 0.05;
+		}
+		
+		if ( self.menuopen && !self usebuttonpressed() )
+		{
+			self playlocalsound( "mouse_click" );
+			
+			if ( self.submenu != "Main" )
+			{
+				self ExitSub();
+			}
+			else
+			{
+				self ExitMenu();
 			}
 		}
 		
@@ -266,7 +277,7 @@ LeftMenu()
 	
 	for ( ;; )
 	{
-		while ( !self attackbuttonpressed() )
+		while ( !self adsbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -299,7 +310,7 @@ LeftMenu()
 			}
 		}
 		
-		while ( self attackbuttonpressed() )
+		while ( self adsbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -313,7 +324,7 @@ RightMenu()
 	
 	for ( ;; )
 	{
-		while ( !self adsbuttonpressed() )
+		while ( !self attackbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -346,7 +357,7 @@ RightMenu()
 			}
 		}
 		
-		while ( self adsbuttonpressed() )
+		while ( self attackbuttonpressed() )
 		{
 			wait 0.05;
 		}
@@ -398,7 +409,7 @@ OpenSub( menu, menu2 )
 		for ( i = 0 ; i < self.option[ "Name" ][ self.submenu ].size ; i++ )
 		{
 			self.menutext[ i ] = self createfontstring( "default", 1.6 );
-			self.menutext[ i ] setpoint( "CENTER", "CENTER", -300 + ( i * 100 ), -226 );
+			self.menutext[ i ] setpoint( "CENTER", "CENTER", -300 + ( i * 260 ), -226 );
 			self.menutext[ i ] settext( self.option[ "Name" ][ self.submenu ][ i ] );
 			
 			if ( logOldi )
@@ -410,7 +421,7 @@ OpenSub( menu, menu2 )
 			{
 				logOldi = false;
 				x = i - self.oldi;
-				self.menutext[ i ] setpoint( "CENTER", "CENTER", ( ( ( -300 ) - ( i * 100 ) ) + ( i * 100 ) ) + ( x * 100 ), -196 );
+				self.menutext[ i ] setpoint( "CENTER", "CENTER", -300 + ( x * 260 ), -196 );
 			}
 			
 			self.menutext[ i ].alpha = 1;
@@ -429,13 +440,23 @@ OpenSub( menu, menu2 )
 		self.menu[ "X" ][ "Scroller" ] = self createRectangle( "CENTER", "CENTER", self.menutext[ self.curs[ "Main" ][ "X" ] ].x, -225, 105, 22, ( 1, 0, 0 ), -1, 1, "white" );
 		
 		self CursMove( "X" );
-		
-		self.menuversionhud = initHudElem( "Bot Warfare " + level.bw_version, 0, 0 );
+
+		controlstext = "[{+gostand}] select - [{+speed_throw}]/[{+attack}] move - [{+melee}] back";
+		brandingtext = "     Bot Warfare " + level.bw_version + " (Xenon)";
+		self.menuversionhud = initHudElem( controlstext + "\n" + brandingtext, 0, 15 );
 		
 		self.menuopen = true;
+		self freezecontrols( true );
 	}
 	else
 	{
+		menuY = -160;
+		// Avoid overlap with the minimap
+		if ( self.submenu == "man_bots" )
+		{
+			menuY = -70;
+		}
+
 		if ( isdefined( self.menutexty ) )
 		{
 			for ( i = 0 ; i < self.menutexty.size ; i++ )
@@ -450,7 +471,7 @@ OpenSub( menu, menu2 )
 		for ( i = 0 ; i < self.option[ "Name" ][ self.submenu ].size ; i++ )
 		{
 			self.menutexty[ i ] = self createfontstring( "default", 1.6 );
-			self.menutexty[ i ] setpoint( "CENTER", "CENTER", self.menutext[ self.curs[ "Main" ][ "X" ] ].x, -160 + ( i * 20 ) );
+			self.menutexty[ i ] setpoint( "CENTER", "CENTER", self.menutext[ self.curs[ "Main" ][ "X" ] ].x, menuY + ( i * 20 ) );
 			self.menutexty[ i ] settext( self.option[ "Name" ][ self.submenu ][ i ] );
 			self.menutexty[ i ].alpha = 1;
 			self.menutexty[ i ].sort = 999;
@@ -525,14 +546,7 @@ ShowOptionOn( variable )
 	
 	for ( time = 0;; time += 0.05 )
 	{
-		if ( !self isonground() && isalive( self ) && !level.inprematchperiod && !level.gameended )
-		{
-			self freezecontrols( false );
-		}
-		else
-		{
-			self freezecontrols( true );
-		}
+		self freezecontrols( true );
 		
 		self setclientdvar( "r_blur", "5" );
 		self setclientdvar( "sc_blur", "4" );
@@ -668,6 +682,7 @@ ExitMenu()
 	
 	self.menuopen = false;
 	self notify( "exit" );
+	self freezecontrols( false );
 	
 	self setclientdvar( "r_blur", "0" );
 	self setclientdvar( "sc_blur", "2" );
