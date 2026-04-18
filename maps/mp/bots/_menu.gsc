@@ -442,7 +442,7 @@ OpenSub( menu, menu2 )
 		self CursMove( "X" );
 
 		controlstext = "[{+gostand}] select - [{+speed_throw}]/[{+attack}] move - [{+melee}] back";
-		brandingtext = "     Bot Warfare " + level.bw_version + " (Xenon)";
+		brandingtext = "      Bot Warfare " + level.bw_version;
 		self.menuversionhud = initHudElem( controlstext + "\n" + brandingtext, 0, 15 );
 		
 		self.menuopen = true;
